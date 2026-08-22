@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   getHistoricalGenerationSnapshot,
-  getSnapshotFilePath,
+  getSnapshotStorageInfo,
 } from "@/lib/openelectricity-history";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +19,7 @@ export async function GET(request) {
     return NextResponse.json(
       {
         ...result,
-        filePath: getSnapshotFilePath(),
+        storage: getSnapshotStorageInfo(),
       },
       {
         headers: {

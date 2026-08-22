@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "openelectricity:upload-snapshot": "node scripts/upload-openelectricity-history-to-supabase.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
