@@ -3,14 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "openelectricity:upload-snapshot": "node scripts/upload-openelectricity-history-to-supabase.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.3",
     "next": "16.3.2",
+    "openelectricity": "^0.9.1",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
