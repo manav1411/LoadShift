@@ -1,26 +1,229 @@
-@import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+* {
+  box-sizing: border-box;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  margin: 0;
+  min-height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: #fff;
+  color: #111;
   font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.landing-page,
+.dashboard-page {
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.landing-page {
+  display: grid;
+  place-items: center;
+}
+
+.welcome {
+  width: min(100%, 440px);
+  text-align: center;
+}
+
+.welcome h1 {
+  margin: 0 0 16px;
+  font-size: clamp(2.25rem, 8vw, 4rem);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+}
+
+.welcome > p {
+  margin: 0 0 32px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.auth-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.auth-button,
+.submit-button,
+.sign-out-button,
+.back-button {
+  border: 1px solid #111;
+  background: #fff;
+  color: #111;
+}
+
+.auth-button,
+.submit-button {
+  min-width: 120px;
+  padding: 11px 18px;
+}
+
+.auth-button:hover,
+.submit-button:hover:not(:disabled),
+.sign-out-button:hover,
+.back-button:hover {
+  background: #111;
+  color: #fff;
+}
+
+.auth-box {
+  margin: 0 auto;
+  padding: 24px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.auth-box-header,
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.auth-box-header {
+  margin-bottom: 24px;
+}
+
+.auth-box h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.back-button,
+.sign-out-button {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
+
+.auth-box form {
+  display: grid;
+  gap: 16px;
+}
+
+.auth-box label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.auth-box input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #bbb;
+  border-radius: 0;
+  outline: none;
+}
+
+.auth-box input:focus {
+  border-color: #111;
+}
+
+.submit-button {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.submit-button:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
+.form-message,
+.form-error {
+  margin: 16px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.form-error {
+  color: #a00;
+}
+
+.dashboard-content {
+  width: min(100%, 760px);
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  padding-bottom: 18px;
+  border-bottom: 1px solid #ddd;
+}
+
+.dashboard-header > span {
+  font-weight: 600;
+}
+
+.dashboard-content h1 {
+  margin: 72px 0 10px;
+  font-size: clamp(2.25rem, 7vw, 4rem);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+}
+
+.dashboard-content > p {
+  margin: 0;
+  color: #666;
+}
+
+.data-section {
+  margin-top: 64px;
+}
+
+.data-section h2 {
+  margin: 0 0 16px;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.data-section > p {
+  color: #666;
+}
+
+.workload-list {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.workload-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid #ddd;
+}
+
+.workload-list small {
+  color: #666;
+}
+
+@media (max-width: 560px) {
+  .landing-page,
+  .dashboard-page {
+    padding: 16px;
+  }
+
+  .workload-list li {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
 }

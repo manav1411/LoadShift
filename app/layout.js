@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "LoadShift",
-  description: "Energy-aware workload scheduling experiments.",
+  description: "Understand and reduce the carbon impact of your cloud workloads.",
 };
 
 export default function RootLayout({ children }) {
