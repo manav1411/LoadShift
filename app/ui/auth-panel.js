@@ -38,7 +38,7 @@ export default function AuthPanel() {
           email,
           password,
           options: {
-            data: { full_name: fullName },
+            data: { display_name: fullName, full_name: fullName },
             emailRedirectTo: `${window.location.origin}/auth/callback`,
           },
         })

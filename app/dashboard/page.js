@@ -12,12 +12,19 @@ export default async function DashboardPage() {
   }
 
   const userId = claimsData.claims.sub;
-  const [{ data: profile }, { data: awsConnection }] = await Promise.all([
+  const [{ data: profile }, { data: awsConnection }, { data: userData }] = await Promise.all([
     supabase.from("profiles").select("display_name").eq("id", userId).maybeSingle(),
     supabase.from("aws_connections").select("aws_account_id, connected_at, role_arn, status").eq("user_id", userId).maybeSingle(),
+    supabase.auth.getUser(),
   ]);
 
-  const name = profile?.display_name || claimsData.claims.email || "there";
+  const metadata = userData?.user?.user_metadata || {};
+  const name = profile?.display_name
+    || metadata.display_name
+    || metadata.full_name
+    || metadata.name
+    || claimsData.claims.email
+    || "there";
 
   return (
     <main className="dashboard-page">
@@ -27,7 +34,6 @@ export default async function DashboardPage() {
           <SignOutButton />
         </header>
         <h1>Hello, {name}</h1>
-        <p>Your private LoadShift workspace.</p>
         <AwsConnection
           initialConnection={awsConnection?.status === "connected" && awsConnection.role_arn ? {
             awsAccountId: awsConnection.aws_account_id,

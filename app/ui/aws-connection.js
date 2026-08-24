@@ -49,6 +49,9 @@ export default function AwsConnection({ initialConnection }) {
   const [instances, setInstances] = useState([]);
   const [warnings, setWarnings] = useState([]);
 
+  const measuredInstances = instances.filter((instance) => Number.isFinite(instance.kilograms));
+  const totalKilograms = measuredInstances.reduce((total, instance) => total + instance.kilograms, 0);
+
   async function openInstructions() {
     setShowInstructions(true);
     setError("");
@@ -115,7 +118,7 @@ export default function AwsConnection({ initialConnection }) {
   return (
     <section className="cloud-connections" aria-labelledby="connections-title">
       <div className="connections-heading">
-        <div><h2 id="connections-title">Cloud connections</h2><p>Connect your cloud account to measure live infrastructure.</p></div>
+        <div><h2 id="connections-title">Cloud connections</h2></div>
       </div>
       <div className="provider-cards">
         {providers.map((provider) => (
@@ -123,7 +126,7 @@ export default function AwsConnection({ initialConnection }) {
             <div className="provider-card-top"><h3>{provider.name}</h3>{connection && provider.id === "aws" && <span className="connected-label">Connected</span>}</div>
             {provider.available ? (
               connection ? <><p>Read-only EC2 access is active for account {connection.awsAccountId || "your AWS account"}.</p><div className="provider-actions"><button type="button" onClick={loadInstances} disabled={isBusy}>{isBusy ? "Loading…" : "Refresh EC2 data"}</button><button type="button" onClick={disconnect} disabled={isBusy}>Disconnect</button></div></> : <><p>Read instance inventory and CPU utilisation with a read-only IAM role.</p><button type="button" onClick={openInstructions}>Connect AWS</button></>
-            ) : <><p>Azure and GCP connections will be available soon.</p><button type="button" disabled>Coming soon</button></>}
+            ) : <><p></p><button type="button" disabled>Coming soon</button></>}
           </article>
         ))}
       </div>
@@ -144,7 +147,7 @@ export default function AwsConnection({ initialConnection }) {
         </div>
       )}
       {error && !showInstructions && <p className="form-error" role="alert">{error}</p>}
-      {connection && instances.length > 0 && <div className="aws-inventory"><div className="inventory-summary"><div><h3>Measured EC2 footprint</h3><p>Last 24 hours across supported AWS regions</p></div><strong>{instances.reduce((total, instance) => total + (instance.kilograms || 0), 0).toFixed(3)} kg CO₂e</strong></div><ul className="inventory-list">{instances.map((instance) => <li key={instance.id}><span><strong>{instance.name}</strong><small>{instance.instanceType} · {instance.region} · {Number.isFinite(instance.averageCpuUtilisation) ? `${instance.averageCpuUtilisation.toFixed(1)}% avg CPU` : "No CPU data"}</small></span><strong>{instance.kilograms == null ? "Profile unavailable" : `${instance.kilograms.toFixed(3)} kg CO₂e`}</strong></li>)}</ul>{warnings.map((warning) => <p className="estimate-note" key={warning}>{warning}</p>)}</div>}
+      {connection && instances.length > 0 && <div className="aws-inventory"><div className="inventory-summary"><div><h3>Measured EC2 footprint</h3><p>Last 24 completed hours across supported AWS regions</p></div><strong>{measuredInstances.length > 0 ? `${totalKilograms.toFixed(3)} kg CO₂e` : "Not available yet"}</strong></div><ul className="inventory-list">{instances.map((instance) => <li key={instance.id}><span><strong>{instance.name}</strong><small>{instance.instanceType} · {instance.region} · {Number.isFinite(instance.averageCpuUtilisation) ? `${instance.averageCpuUtilisation.toFixed(1)}% avg CPU` : "No CPU data"}</small></span><strong>{instance.kilograms == null ? "Profile unavailable" : `${instance.kilograms.toFixed(3)} kg CO₂e`}</strong></li>)}</ul>{warnings.map((warning) => <p className="estimate-note" key={warning}>{warning}</p>)}</div>}
     </section>
   );
 }
