@@ -36,6 +36,7 @@ Set these server-only variables in `.env.local` or Vercel:
 AWS_LOADSHIFT_ACCOUNT_ID=your-loadshift-aws-account-id
 AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
+AWS_REGION=ap-southeast-2
 AWS_CONTROL_REGION=ap-southeast-2
 ```
 

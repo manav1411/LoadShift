@@ -1,6 +1,6 @@
 import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
 import { NextResponse } from "next/server";
-import { assumeCustomerRole } from "@/lib/aws-carbon";
+import { assumeCustomerRole, getControlRegion } from "@/lib/aws-carbon";
 import { getClaims } from "@/lib/supabase/auth";
 
 export const runtime = "nodejs";
@@ -68,7 +68,7 @@ export async function POST(request) {
     if (!isRoleArn(roleArn)) throw new Error("Enter a valid IAM role ARN, for example arn:aws:iam::123456789012:role/LoadShiftReadOnly.");
 
     const temporaryCredentials = await assumeCustomerRole(roleArn, connection.external_id);
-    const sts = new STSClient({ region: process.env.AWS_CONTROL_REGION || "ap-southeast-2", credentials: temporaryCredentials });
+    const sts = new STSClient({ region: getControlRegion(), credentials: temporaryCredentials });
     const identity = await sts.send(new GetCallerIdentityCommand({}));
     const { error } = await supabase.from("aws_connections").upsert({
       aws_account_id: identity.Account || null,
