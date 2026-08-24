@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import GridSchedule from "@/app/ui/grid-schedule";
+import FleetConsole from "@/app/ui/fleet-console";
 import SignOutButton from "@/app/ui/sign-out-button";
+import TopNav from "@/app/ui/top-nav";
 
 function getPolicies(principalArn, externalId) {
   return {
@@ -40,13 +41,9 @@ export default function AwsConnection({ initialConnection, userName }) {
   const [principalArn, setPrincipalArn] = useState("");
   const [roleArn, setRoleArn] = useState("");
   const [connection, setConnection] = useState(initialConnection || null);
+  const [demoMode, setDemoMode] = useState(false);
   const [error, setError] = useState("");
   const [isBusy, setIsBusy] = useState(false);
-  const [instances, setInstances] = useState([]);
-  const [warnings, setWarnings] = useState([]);
-
-  const measuredInstances = instances.filter((instance) => Number.isFinite(instance.kilograms));
-  const totalKilograms = measuredInstances.reduce((total, instance) => total + instance.kilograms, 0);
 
   async function openInstructions() {
     setShowInstructions(true);
@@ -76,6 +73,7 @@ export default function AwsConnection({ initialConnection, userName }) {
       return;
     }
     setConnection(data);
+    setDemoMode(false);
     setShowInstructions(false);
     setIsBusy(false);
     router.refresh();
@@ -87,51 +85,42 @@ export default function AwsConnection({ initialConnection, userName }) {
     const response = await fetch("/api/aws/connection", { method: "DELETE" });
     const data = await response.json();
     if (!response.ok) setError(data.error || "Unable to disconnect AWS.");
-    else {
-      setConnection(null);
-      setInstances([]);
-      setWarnings([]);
-    }
+    else setConnection(null);
     setIsBusy(false);
     router.refresh();
-  }
-
-  async function loadInstances() {
-    setIsBusy(true);
-    setError("");
-    const response = await fetch("/api/aws/instances");
-    const data = await response.json();
-    if (!response.ok) setError(data.error || "Unable to load AWS instances.");
-    else {
-      setInstances(data.instances || []);
-      setWarnings(data.warnings || []);
-    }
-    setIsBusy(false);
   }
 
   const policies = getPolicies(
     principalArn || "arn:aws:iam::<YOUR_LOADSHIFT_ACCOUNT_ID>:root",
     externalId || "<EXTERNAL_ID_FROM_LOADSHIFT>",
   );
+  const showConsole = Boolean(connection) || demoMode;
 
   return (
     <div className="workspace-shell">
-      <header className="workspace-nav">
-        <div className="workspace-brand">
-          <span>LoadShift</span>
-          <small>{userName ? `Hello, ${userName}` : "Cloud carbon workspace"}</small>
-        </div>
-        <div className="workspace-actions">
-          <span className={`aws-status ${connection ? "connected" : ""}`}><i />AWS {connection ? "connected" : "not connected"}</span>
-          {connection && <button className="nav-button" disabled={isBusy} onClick={loadInstances} type="button">{isBusy ? "Refreshing…" : "Refresh"}</button>}
-          {connection ? <button className="nav-button subtle" disabled={isBusy} onClick={disconnect} type="button">Disconnect</button> : <button className="nav-button primary" onClick={openInstructions} type="button">Connect AWS</button>}
-          <SignOutButton />
-        </div>
-      </header>
+      <TopNav>
+        {demoMode && !connection && <span className="aws-status demo">Sample fleet</span>}
+        {connection && <span className="aws-status connected">AWS connected</span>}
+        {demoMode && !connection && (
+          <button className="nav-button" onClick={() => setDemoMode(false)} type="button">Exit sample</button>
+        )}
+        {connection ? (
+          <button className="nav-button danger" disabled={isBusy} onClick={disconnect} type="button">Disconnect</button>
+        ) : (
+          <button className="nav-button primary" onClick={openInstructions} type="button">Connect AWS</button>
+        )}
+        <SignOutButton />
+      </TopNav>
 
       {showInstructions && !connection && (
         <div className="aws-instructions">
-          <div className="instructions-header"><div><h3>Connect AWS securely</h3><p>LoadShift never asks for your AWS access keys. Create a cross-account role with the policies below.</p></div><button type="button" onClick={() => setShowInstructions(false)}>Close</button></div>
+          <div className="instructions-header">
+            <div>
+              <h3>Connect AWS securely</h3>
+              <p>LoadShift never asks for your AWS access keys. Create a cross-account role with the policies below.</p>
+            </div>
+            <button onClick={() => setShowInstructions(false)} type="button">Close</button>
+          </div>
           <ol>
             <li>In AWS IAM, create a role named <strong>LoadShiftReadOnly</strong>.</li>
             <li>Use this as the role&apos;s trust policy:</li>
@@ -140,41 +129,34 @@ export default function AwsConnection({ initialConnection, userName }) {
           <ol start="3"><li>Attach this permissions policy to the role:</li></ol>
           <pre>{policies.permissions}</pre>
           <ol start="4"><li>Copy the role ARN and paste it here:</li></ol>
-          <label className="role-input">IAM role ARN<input value={roleArn} onChange={(event) => setRoleArn(event.target.value)} placeholder="arn:aws:iam::123456789012:role/LoadShiftReadOnly" /></label>
+          <label className="role-input">
+            IAM role ARN
+            <input onChange={(event) => setRoleArn(event.target.value)} placeholder="arn:aws:iam::123456789012:role/LoadShiftReadOnly" value={roleArn} />
+          </label>
           {error && <p className="form-error" role="alert">{error}</p>}
-          <button className="submit-button" type="button" onClick={connect} disabled={isBusy || !roleArn}>{isBusy ? "Checking role…" : "Connect and verify role"}</button>
+          <button className="submit-button" disabled={isBusy || !roleArn} onClick={connect} type="button">
+            {isBusy ? "Checking role…" : "Connect and verify role"}
+          </button>
         </div>
       )}
 
       {error && !showInstructions && <p className="form-error workspace-error" role="alert">{error}</p>}
 
-      {!connection && !showInstructions && (
+      {!showConsole && !showInstructions && (
         <div className="workspace-empty">
-          <span className="schedule-eyebrow">Your workspace</span>
-          <h1>Connect AWS to see your compute move through the NEM.</h1>
-          <p>LoadShift uses read-only EC2 and CloudWatch data to estimate your footprint and show when the grid is cleaner.</p>
-          <button className="submit-button" onClick={openInstructions} type="button">Connect AWS</button>
+          <span className="schedule-eyebrow">{userName ? `Welcome, ${userName}` : "Your workspace"}</span>
+          <h1>Watch your compute move through the grid.</h1>
+          <p>Connect AWS with read-only access and LoadShift will show what your EC2 footprint emitted over the last day — and what the same work would have cost the atmosphere run at a cleaner hour.</p>
+          <div className="empty-actions">
+            <button className="submit-button" onClick={openInstructions} type="button">Connect AWS</button>
+            <button className="ghost-button" onClick={() => setDemoMode(true)} type="button">Explore a sample fleet</button>
+          </div>
         </div>
       )}
 
-      {connection && instances.length === 0 && (
-        <div className="workspace-empty compact">
-          <span className="schedule-eyebrow">AWS connected</span>
-          <h1>Your grid model is ready.</h1>
-          <p>Refresh EC2 data to build the interactive NEM view.</p>
-          <button className="submit-button" onClick={loadInstances} type="button" disabled={isBusy}>{isBusy ? "Loading…" : "Load EC2 data"}</button>
-        </div>
-      )}
-
-      {connection && instances.length > 0 && (
+      {showConsole && (
         <main className="workspace-main">
-          <GridSchedule instances={instances} />
-          <section className="aws-summary-strip" aria-label="AWS footprint summary">
-            <div><span>Estimated EC2 footprint</span><strong>{measuredInstances.length > 0 ? `${totalKilograms.toFixed(3)} kg CO₂e` : "Not available"}</strong></div>
-            <div><span>Running instances</span><strong>{instances.length}</strong></div>
-            <div><span>Coverage</span><strong>24h</strong></div>
-            {warnings.length > 0 && <div className="summary-warning"><span>Data note</span><strong>{warnings[0]}</strong></div>}
-          </section>
+          <FleetConsole demo={demoMode && !connection} />
         </main>
       )}
     </div>

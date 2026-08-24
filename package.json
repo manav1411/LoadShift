@@ -5,13 +5,16 @@
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build",
-    "start": "next start",
-    "openelectricity:upload-snapshot": "node scripts/upload-openelectricity-history-to-supabase.mjs"
+    "start": "next start"
   },
   "dependencies": {
     "@aws-sdk/client-cloudwatch": "^3.1116.0",
     "@aws-sdk/client-ec2": "^3.1116.0",
     "@aws-sdk/client-sts": "^3.1116.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.3.1",
+    "@mui/material": "^9.3.1",
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
     "@supabase/ssr": "^0.12.4",
@@ -21,9 +24,5 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "three": "^0.185.1"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
   }
 }
