@@ -145,8 +145,7 @@ export default function AwsConnection({ initialConnection, userName }) {
       {!showConsole && !showInstructions && (
         <div className="workspace-empty">
           <span className="schedule-eyebrow">{userName ? `Welcome, ${userName}` : "Your workspace"}</span>
-          <h1>Watch your compute move through the grid.</h1>
-          <p>Connect AWS with read-only access and LoadShift will show what your EC2 footprint emitted over the last day — and what the same work would have cost the atmosphere run at a cleaner hour.</p>
+          <h1>Compute greener with LoadShift</h1>
           <div className="empty-actions">
             <button className="submit-button" onClick={openInstructions} type="button">Connect AWS</button>
             <button className="ghost-button" onClick={() => setDemoMode(true)} type="button">Explore a sample fleet</button>

@@ -41,7 +41,7 @@ export default async function HomePage() {
           <h1>LoadShift</h1>
           <AuthPanel />
           <div className="landing-links">
-            <Link className="landing-method-link" href="/demo">Explore a sample fleet</Link>
+            <Link className="landing-method-link" href="/demo">sample fleet</Link>
           </div>
         </div>
         <LiveGridTeaser regions={liveRegions} />
