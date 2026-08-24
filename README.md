@@ -60,4 +60,4 @@ For email confirmation, add `http://localhost:3000/auth/callback` to Supabase Au
 
 ## Disclosure
 
-I used AI for some style suggestions like buttons, etc.
+I used libraries such as three.js, and the teads engineering dataset for EC2 effeciencies by instance type. I used AI for some style suggestions like buttons, etc.
