@@ -56,3 +56,8 @@ For email confirmation, add `http://localhost:3000/auth/callback` to Supabase Au
 - This is a historical signal, not a forecast: LoadShift measures one real day and recommends a *time of day*, on the basis that the NEM's carbon curve is driven by sunrise/sunset and recurs day to day more than a single day's reading might suggest.
 - Shifting is modelled at whole-hour resolution and assumes a moved job can run at its target hour.
 - LoadShift recommends a window, it doesn't yet reschedule jobs for you. yet...
+
+
+## Disclosure
+
+I used AI for some style suggestions like buttons, etc.
