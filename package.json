@@ -9,6 +9,9 @@
     "openelectricity:upload-snapshot": "node scripts/upload-openelectricity-history-to-supabase.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-cloudwatch": "^3.1116.0",
+    "@aws-sdk/client-ec2": "^3.1116.0",
+    "@aws-sdk/client-sts": "^3.1116.0",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.3",
     "next": "16.3.2",

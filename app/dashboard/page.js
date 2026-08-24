@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import AwsConnection from "@/app/ui/aws-connection";
 import SignOutButton from "@/app/ui/sign-out-button";
 import { createClient } from "@/lib/supabase/server";
 
@@ -11,9 +12,9 @@ export default async function DashboardPage() {
   }
 
   const userId = claimsData.claims.sub;
-  const [{ data: profile }, { data: workloads }] = await Promise.all([
+  const [{ data: profile }, { data: awsConnection }] = await Promise.all([
     supabase.from("profiles").select("display_name").eq("id", userId).maybeSingle(),
-    supabase.from("workloads").select("id, name, provider, status").eq("user_id", userId).order("created_at", { ascending: false }),
+    supabase.from("aws_connections").select("aws_account_id, connected_at, role_arn, status").eq("user_id", userId).maybeSingle(),
   ]);
 
   const name = profile?.display_name || claimsData.claims.email || "there";
@@ -27,21 +28,12 @@ export default async function DashboardPage() {
         </header>
         <h1>Hello, {name}</h1>
         <p>Your private LoadShift workspace.</p>
-        <section className="data-section" aria-labelledby="workloads-title">
-          <h2 id="workloads-title">Your workloads</h2>
-          {workloads?.length ? (
-            <ul className="workload-list">
-              {workloads.map((workload) => (
-                <li key={workload.id}>
-                  <span>{workload.name}</span>
-                  <small>{workload.provider || "Unknown provider"} · {workload.status || "Not configured"}</small>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No workloads yet.</p>
-          )}
-        </section>
+        <AwsConnection
+          initialConnection={awsConnection?.status === "connected" && awsConnection.role_arn ? {
+            awsAccountId: awsConnection.aws_account_id,
+            connectedAt: awsConnection.connected_at,
+          } : null}
+        />
       </section>
     </main>
   );
