@@ -22,7 +22,7 @@ export async function GET() {
 
     const { data: profiles, error: profilesError } = await supabase
       .from("ec2_power_profiles")
-      .select("instance_type, idle_watts, max_watts, source_url");
+      .select("instance_type, idle_watts, max_watts");
 
     if (profilesError && profilesError.code !== "PGRST205") throw new Error(profilesError.message);
     const result = await getAwsInventory({

@@ -2,12 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-const providers = [
-  { id: "aws", name: "AWS", available: true },
-  { id: "azure", name: "Azure", available: false },
-  { id: "gcp", name: "GCP", available: false },
-];
+import GridSchedule from "@/app/ui/grid-schedule";
+import SignOutButton from "@/app/ui/sign-out-button";
 
 function getPolicies(principalArn, externalId) {
   return {
@@ -37,7 +33,7 @@ function getPolicies(principalArn, externalId) {
   };
 }
 
-export default function AwsConnection({ initialConnection }) {
+export default function AwsConnection({ initialConnection, userName }) {
   const router = useRouter();
   const [showInstructions, setShowInstructions] = useState(false);
   const [externalId, setExternalId] = useState("");
@@ -113,23 +109,26 @@ export default function AwsConnection({ initialConnection }) {
     setIsBusy(false);
   }
 
-  const policies = getPolicies(principalArn || "arn:aws:iam::<YOUR_LOADSHIFT_ACCOUNT_ID>:root", externalId || "<EXTERNAL_ID_FROM_LOADSHIFT>");
+  const policies = getPolicies(
+    principalArn || "arn:aws:iam::<YOUR_LOADSHIFT_ACCOUNT_ID>:root",
+    externalId || "<EXTERNAL_ID_FROM_LOADSHIFT>",
+  );
 
   return (
-    <section className="cloud-connections" aria-labelledby="connections-title">
-      <div className="connections-heading">
-        <div><h2 id="connections-title">Cloud connections</h2></div>
-      </div>
-      <div className="provider-cards">
-        {providers.map((provider) => (
-          <article className={`provider-card ${connection && provider.id === "aws" ? "connected" : ""}`} key={provider.id}>
-            <div className="provider-card-top"><h3>{provider.name}</h3>{connection && provider.id === "aws" && <span className="connected-label">Connected</span>}</div>
-            {provider.available ? (
-              connection ? <><p>Read-only EC2 access is active for account {connection.awsAccountId || "your AWS account"}.</p><div className="provider-actions"><button type="button" onClick={loadInstances} disabled={isBusy}>{isBusy ? "Loading…" : "Refresh EC2 data"}</button><button type="button" onClick={disconnect} disabled={isBusy}>Disconnect</button></div></> : <><p>Read instance inventory and CPU utilisation with a read-only IAM role.</p><button type="button" onClick={openInstructions}>Connect AWS</button></>
-            ) : <><p></p><button type="button" disabled>Coming soon</button></>}
-          </article>
-        ))}
-      </div>
+    <div className="workspace-shell">
+      <header className="workspace-nav">
+        <div className="workspace-brand">
+          <span>LoadShift</span>
+          <small>{userName ? `Hello, ${userName}` : "Cloud carbon workspace"}</small>
+        </div>
+        <div className="workspace-actions">
+          <span className={`aws-status ${connection ? "connected" : ""}`}><i />AWS {connection ? "connected" : "not connected"}</span>
+          {connection && <button className="nav-button" disabled={isBusy} onClick={loadInstances} type="button">{isBusy ? "Refreshing…" : "Refresh"}</button>}
+          {connection ? <button className="nav-button subtle" disabled={isBusy} onClick={disconnect} type="button">Disconnect</button> : <button className="nav-button primary" onClick={openInstructions} type="button">Connect AWS</button>}
+          <SignOutButton />
+        </div>
+      </header>
+
       {showInstructions && !connection && (
         <div className="aws-instructions">
           <div className="instructions-header"><div><h3>Connect AWS securely</h3><p>LoadShift never asks for your AWS access keys. Create a cross-account role with the policies below.</p></div><button type="button" onClick={() => setShowInstructions(false)}>Close</button></div>
@@ -146,8 +145,38 @@ export default function AwsConnection({ initialConnection }) {
           <button className="submit-button" type="button" onClick={connect} disabled={isBusy || !roleArn}>{isBusy ? "Checking role…" : "Connect and verify role"}</button>
         </div>
       )}
-      {error && !showInstructions && <p className="form-error" role="alert">{error}</p>}
-      {connection && instances.length > 0 && <div className="aws-inventory"><div className="inventory-summary"><div><h3>Measured EC2 footprint</h3><p>Last 24 completed hours across supported AWS regions</p></div><strong>{measuredInstances.length > 0 ? `${totalKilograms.toFixed(3)} kg CO₂e` : "Not available yet"}</strong></div><ul className="inventory-list">{instances.map((instance) => <li key={instance.id}><span><strong>{instance.name}</strong><small>{instance.instanceType} · {instance.region} · {Number.isFinite(instance.averageCpuUtilisation) ? `${instance.averageCpuUtilisation.toFixed(1)}% avg CPU` : "No CPU data"}</small></span><strong>{instance.kilograms == null ? "Profile unavailable" : `${instance.kilograms.toFixed(3)} kg CO₂e`}</strong></li>)}</ul>{warnings.map((warning) => <p className="estimate-note" key={warning}>{warning}</p>)}</div>}
-    </section>
+
+      {error && !showInstructions && <p className="form-error workspace-error" role="alert">{error}</p>}
+
+      {!connection && !showInstructions && (
+        <div className="workspace-empty">
+          <span className="schedule-eyebrow">Your workspace</span>
+          <h1>Connect AWS to see your compute move through the NEM.</h1>
+          <p>LoadShift uses read-only EC2 and CloudWatch data to estimate your footprint and show when the grid is cleaner.</p>
+          <button className="submit-button" onClick={openInstructions} type="button">Connect AWS</button>
+        </div>
+      )}
+
+      {connection && instances.length === 0 && (
+        <div className="workspace-empty compact">
+          <span className="schedule-eyebrow">AWS connected</span>
+          <h1>Your grid model is ready.</h1>
+          <p>Refresh EC2 data to build the interactive NEM view.</p>
+          <button className="submit-button" onClick={loadInstances} type="button" disabled={isBusy}>{isBusy ? "Loading…" : "Load EC2 data"}</button>
+        </div>
+      )}
+
+      {connection && instances.length > 0 && (
+        <main className="workspace-main">
+          <GridSchedule instances={instances} />
+          <section className="aws-summary-strip" aria-label="AWS footprint summary">
+            <div><span>Estimated EC2 footprint</span><strong>{measuredInstances.length > 0 ? `${totalKilograms.toFixed(3)} kg CO₂e` : "Not available"}</strong></div>
+            <div><span>Running instances</span><strong>{instances.length}</strong></div>
+            <div><span>Coverage</span><strong>24h</strong></div>
+            {warnings.length > 0 && <div className="summary-warning"><span>Data note</span><strong>{warnings[0]}</strong></div>}
+          </section>
+        </main>
+      )}
+    </div>
   );
 }

@@ -12,8 +12,11 @@ The app reads these variables from `.env` or `.env.local`:
 ```text
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
 OPEN_ELECTRICITY_API_KEY=...
 ```
+
+`SUPABASE_SERVICE_ROLE_KEY` is used only by server routes to refresh/read the shared Open Electricity snapshot. Never expose it with `NEXT_PUBLIC_`.
 
 ## Supabase setup
 
@@ -52,9 +55,11 @@ kWh = watts / 1000 * bucket_hours
 grams CO₂e = kWh * regional_grid_intensity_gCO₂e_per_kWh
 ```
 
+The dashboard also calls `/api/grid/schedule`. It fetches the last 24 complete hours of regional Open Electricity emissions, energy, and fueltech mix data, weighted across the connected AWS regions. The dashboard presents this as a compact 2D chart: grid carbon intensity, relative AWS compute load, and a generation-mix strip. Users can select an hour, compare 1/2/4-hour windows, and estimate avoidable emissions for a configurable percentage of measured average EC2 load, with both regional and instance breakdowns. This is a historical scheduling signal, not a future electricity forecast.
+
 The current mapping supports AWS Sydney (`ap-southeast-2` → `NSW1`) and Melbourne (`ap-southeast-4` → `VIC1`). Other AWS regions are reported as unmapped until an appropriate electricity region is defined.
 
-Azure and GCP are shown as coming soon.
+AWS is the only cloud connection currently available.
 
 ## Production build
 

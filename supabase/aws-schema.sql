@@ -29,10 +29,7 @@ create policy "Users can manage their AWS connection"
 create table if not exists public.ec2_power_profiles (
   instance_type text primary key,
   idle_watts numeric not null check (idle_watts >= 0),
-  max_watts numeric not null check (max_watts >= idle_watts),
-  source text not null default 'Teads Engineering',
-  source_url text,
-  updated_at timestamptz not null default now()
+  max_watts numeric not null check (max_watts >= idle_watts)
 );
 
 alter table public.ec2_power_profiles enable row level security;
@@ -46,7 +43,5 @@ create policy "Signed-in users can read EC2 power profiles"
   using (true);
 
 -- Example import shape. Replace these values with the complete Teads table:
--- insert into public.ec2_power_profiles
---   (instance_type, idle_watts, max_watts, source_url)
--- values
---   ('m5.large', 18, 58, 'https://engineering.teads.com/2021/09/23/building-an-aws-ec2-carbon-emissions-dataset-2/');
+-- insert into public.ec2_power_profiles (instance_type, idle_watts, max_watts)
+-- values ('m5.large', 18, 58);

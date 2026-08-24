@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import AwsConnection from "@/app/ui/aws-connection";
-import SignOutButton from "@/app/ui/sign-out-button";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
@@ -29,16 +28,12 @@ export default async function DashboardPage() {
   return (
     <main className="dashboard-page">
       <section className="dashboard-content">
-        <header className="dashboard-header">
-          <span>LoadShift</span>
-          <SignOutButton />
-        </header>
-        <h1>Hello, {name}</h1>
         <AwsConnection
           initialConnection={awsConnection?.status === "connected" && awsConnection.role_arn ? {
             awsAccountId: awsConnection.aws_account_id,
             connectedAt: awsConnection.connected_at,
           } : null}
+          userName={name}
         />
       </section>
     </main>
